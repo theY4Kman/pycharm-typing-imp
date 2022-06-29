@@ -1,18 +1,13 @@
-<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.they4kman.pycharmtypingimp</id>
-    <name>pycharm-typing-imp</name>
-    <vendor>they4kman</vendor>
+    <id>com.y4kstudios.pycharmtypingimp</id>
+    <name>PyCharm Typing Imp</name>
+    <vendor email="they4kman@gmail.com" url="https://github.com/they4kman">Y4K Studios</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.python</depends>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.github.they4kman.pycharmtypingimp.services.MyApplicationService"/>
-        <projectService serviceImplementation="com.github.they4kman.pycharmtypingimp.services.MyProjectService"/>
+    <extensions defaultExtensionNs="Pythonid">
+        <typeProvider implementation="com.y4kstudios.pycharmtypingimp.psi.types.GetattrTypeProvider" order="last"/>
     </extensions>
-
-    <applicationListeners>
-        <listener class="com.github.they4kman.pycharmtypingimp.listeners.MyProjectManagerListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </applicationListeners>
 </idea-plugin>

@@ -9,7 +9,7 @@ plugins {
     // Kotlin support
     id("org.jetbrains.kotlin.jvm") version "1.6.10"
     // Gradle IntelliJ Plugin
-    id("org.jetbrains.intellij") version "1.4.0"
+    id("org.jetbrains.intellij") version "1.6.0"
     // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "1.3.1"
     // Gradle Qodana Plugin
@@ -22,6 +22,23 @@ version = properties("pluginVersion")
 // Configure project's dependencies
 repositories {
     mavenCentral()
+
+    maven {
+        name = "intellij-releases"
+        url = uri("https://www.jetbrains.com/intellij-repository/releases")
+    }
+    maven {
+        name = "intellij-snapshots"
+        url = uri("https://www.jetbrains.com/intellij-repository/snapshots")
+    }
+    maven {
+        name = "intellij-3rd-party"
+        url = uri("https://cache-redirector.jetbrains.com/intellij-dependencies")
+    }
+    maven {
+        name = "rd-snapshots"
+        url = uri("https://www.myget.org/F/rd-snapshots/maven/")
+    }
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
@@ -88,6 +105,24 @@ tasks {
                 getOrNull(properties("pluginVersion")) ?: getLatest()
             }.toHTML()
         })
+    }
+
+    runIde {
+        maxHeapSize = "2g"
+        jvmArgs = arrayListOf(
+            // Avoid ClassNotFoundException: com.maddyhome.idea.copyright.psi.UpdateCopyrightsProvider
+            // Source: https://github.com/Hannah-Sten/TeXiFy-IDEA/blob/951ffba6029c26e4936d53c781065a7d055a2a8b/build.gradle.kts#L144-L147
+            "-Djava.system.class.loader=com.intellij.util.lang.PathClassLoader",
+
+            "-XX:+UnlockDiagnosticVMOptions",
+            "-Didea.ProcessCanceledException=disabled",
+        )
+    }
+
+    buildSearchableOptions {
+        // NOTE: disabled, as this prevents the building of the plugin while the sandbox IDE (i.e. runIde)
+        //       is being used. When we begin to have a settings panel, we may consider re-enabling this.
+        enabled = false
     }
 
     // Configure UI tests plugin
