@@ -148,4 +148,8 @@ tasks {
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
     }
+
+    jar {
+        exclude("com/jetbrains/**")
+    }
 }
