@@ -4,4 +4,5 @@
 
 ## [Unreleased]
 ### Added
-- Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
+ - Add proper typing support for `__getattr__` and `__getattribute__` return types
+ - Provide correct typing for `dict.values` iteration
