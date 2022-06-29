@@ -1,4 +1,6 @@
 // Copyright 2000-2018 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+package com.y4kstudios.pycharmtypingimp.jetbrains.python.psi.impl
+
 import com.intellij.codeInsight.completion.CompletionUtilCoreImpl
 import com.intellij.openapi.util.Pair
 import com.intellij.openapi.util.Ref
@@ -24,9 +26,9 @@ import one.util.streamex.StreamEx
 import org.jetbrains.annotations.Contract
 import java.util.*
 import java.util.function.Function
-import java.util.function.Supplier
 import java.util.stream.Collectors
 import java.util.stream.Stream
+
 
 /**
  * Functions common to different implementors of PyCallExpression, with different base classes.
@@ -538,13 +540,13 @@ object PyCallExpressionHelper {
     }
 
     private fun isQualifiedByInstance(
-        resolved: PyCallable?, qualifiers: List<PyExpression>,
-        context: TypeEvalContext
+        resolved: PyCallable?,
+        qualifiers: List<PyExpression?>,
+        context: TypeEvalContext,
     ): Boolean {
-        val owner = PsiTreeUtil.getStubOrPsiParentOfType(
-            resolved,
-            PyDocStringOwner::class.java
-        ) as? PyClass ?: return false
+        if (PsiTreeUtil.getStubOrPsiParentOfType(resolved, PyDocStringOwner::class.java) !is PyClass) {
+            return false
+        }
         // true = call by instance
         if (qualifiers.isEmpty()) {
             return true // unqualified + method = implicit constructor call
@@ -580,10 +582,9 @@ object PyCallExpressionHelper {
     ): Boolean {
         val qualifierType = context.getType(qualifier)
         if (qualifierType is PyClassType) {
-            val qualifierClassType = qualifierType
-            return qualifierClassType.isDefinition && belongsToSpecifiedClassHierarchy(
+            return qualifierType.isDefinition && belongsToSpecifiedClassHierarchy(
                 resolved,
-                qualifierClassType.pyClass,
+                qualifierType.pyClass,
                 context
             )
         } else if (qualifierType is PyClassLikeType) {
