@@ -8,7 +8,8 @@
 Improve the typing inference in PyCharm. Does the things PyCharm should do, before JetBrains can add them to mainline.
 
 Current feature set:
- - `__getattr__` and `__getattribute__` typing
+ - `__getattr__` and `__getattribute__` typing ([PY-21069](https://youtrack.jetbrains.com/issue/PY-21069/Annotated-return-types-for-getattr-and-getattribute-methods-are-not-taken-into-account-by-type-checker))
+ - Proper iteration typing for `dict.values` ([PY-52656](https://youtrack.jetbrains.com/issue/PY-52656/Incorrect-dictvalues-return-type))
 <!-- Plugin description end -->
 
 ## Installation
