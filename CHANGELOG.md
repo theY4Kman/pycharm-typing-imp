@@ -3,6 +3,8 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+
+## 0.1.1 — 2022/06/29
 ### Fixed
  - Bump minimum supported PyCharm version to 2021.1.3
 
