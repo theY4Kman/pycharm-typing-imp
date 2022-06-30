@@ -13,7 +13,6 @@ import com.jetbrains.python.PyNames
 import com.jetbrains.python.PythonRuntimeService
 import com.jetbrains.python.codeInsight.controlflow.ScopeOwner
 import com.jetbrains.python.codeInsight.dataflow.scope.ScopeUtil
-import com.jetbrains.python.codeInsight.typing.PyTypingTypeProvider
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.PyCallExpression.PyArgumentsMapping
 import com.jetbrains.python.psi.impl.*
@@ -626,64 +625,6 @@ object PyCallExpressionHelper {
         ))
     }
 
-    /**
-     * This method should not be called directly,
-     * please obtain its result via [TypeEvalContext.getType] with `call` as an argument.
-     */
-    fun getCallType(
-        call: PyCallExpression,
-        context: TypeEvalContext,
-        key: TypeEvalContext.Key
-    ): PyType? {
-        val callee = call.callee
-        if (callee is PyReferenceExpression) {
-            // hardwired special cases
-            if (PyNames.SUPER == callee.getText()) {
-                val superCallType = getSuperCallType(call, context)
-                if (superCallType.isDefined) {
-                    return superCallType.value()
-                }
-            }
-            if ("type" == callee.getText()) {
-                val args = call.arguments
-                if (args.size == 1) {
-                    val arg = args[0]
-                    val argType = context.getType(arg)
-                    if (argType is PyClassType) {
-                        val classType = argType
-                        if (!classType.isDefinition) {
-                            val cls = classType.pyClass
-                            return context.getType(cls)
-                        }
-                    } else {
-                        return null
-                    }
-                }
-            }
-        }
-        if (callee is PySubscriptionExpression) {
-            val parametrizedType = Ref.deref(PyTypingTypeProvider.getType(callee, context))
-            if (parametrizedType != null) {
-                return parametrizedType
-            }
-        }
-        val resolveContext = PyResolveContext.defaultContext(context)
-        return getCallType(multiResolveCallee(call, resolveContext), call, context)
-    }
-
-    /**
-     * This method should not be called directly,
-     * please obtain its result via [TypeEvalContext.getType] with `subscription` as an argument.
-     */
-    fun getCallType(
-        subscription: PySubscriptionExpression,
-        context: TypeEvalContext,
-        key: TypeEvalContext.Key
-    ): PyType? {
-        val resolveContext = PyResolveContext.defaultContext(context)
-        return getCallType(multiResolveCallee(subscription, resolveContext), subscription, context)
-    }
-
     private fun getCallType(
         callableTypes: List<PyCallableType>,
         callSite: PyCallSiteExpression,
@@ -980,7 +921,7 @@ object PyCallExpressionHelper {
     }
 
     fun getRegularMappedParameters(mapping: Map<PyExpression, PyCallableParameter>): Map<PyExpression, PyCallableParameter> {
-        val result: MutableMap<PyExpression, PyCallableParameter> = java.util.LinkedHashMap()
+        val result: MutableMap<PyExpression, PyCallableParameter> = LinkedHashMap()
         for ((argument, parameter) in mapping.entries) {
             if (!parameter.isPositionalContainer && !parameter.isKeywordContainer) {
                 result[argument] = parameter
@@ -1120,7 +1061,7 @@ object PyCallExpressionHelper {
         var seenSingleStar = false
         var mappedVariadicArgumentsToParameters = false
         val mappedParameters: MutableMap<PyExpression, PyCallableParameter> =
-            java.util.LinkedHashMap()
+            LinkedHashMap()
         val unmappedParameters: MutableList<PyCallableParameter> = ArrayList()
         val unmappedArguments: MutableList<PyExpression> = ArrayList()
         val parametersMappedToVariadicKeywordArguments: MutableList<PyCallableParameter> =
@@ -1128,7 +1069,7 @@ object PyCallExpressionHelper {
         val parametersMappedToVariadicPositionalArguments: MutableList<PyCallableParameter> =
             ArrayList()
         val tupleMappedParameters: MutableMap<PyExpression, PyCallableParameter> =
-            java.util.LinkedHashMap()
+            LinkedHashMap()
         val positionalResults = filterPositionalAndVariadicArguments(arguments)
         val keywordArguments = filterKeywordArguments(arguments)
         val variadicPositionalArguments = positionalResults.variadicPositionalArguments
@@ -1377,7 +1318,7 @@ object PyCallExpressionHelper {
         val receiver = callSite.getReceiver(overload)
         val mappedExplicitParameters = fullMapping.mappedParameters
         val allMappedParameters: MutableMap<PyExpression, PyCallableParameter> =
-            java.util.LinkedHashMap()
+            LinkedHashMap()
         val firstImplicit = ContainerUtil.getFirstItem(fullMapping.implicitParameters)
         if (receiver != null && firstImplicit != null) {
             allMappedParameters[receiver] = firstImplicit
@@ -1391,14 +1332,13 @@ object PyCallExpressionHelper {
     }
 
     private fun mapComponentsOfTupleParameter(
-        argument: PyExpression?,
+        argumentExpression: PyExpression?,
         parameter: PyTupleParameter
     ): TupleMappingResults {
-        var argument = argument
+        var argument = argumentExpression
         val unmappedParameters: MutableList<PyCallableParameter> = ArrayList()
         val unmappedArguments: MutableList<PyExpression> = ArrayList()
-        val mappedParameters: MutableMap<PyExpression, PyCallableParameter> =
-            java.util.LinkedHashMap()
+        val mappedParameters: MutableMap<PyExpression, PyCallableParameter> = LinkedHashMap()
         argument = PyPsiUtils.flattenParens(argument)
         if (argument is PySequenceExpression) {
             val argumentComponents = argument.elements
@@ -1517,7 +1457,7 @@ object PyCallExpressionHelper {
         )
     }
 
-    private fun filterVariadicKeywordArguments(arguments: List<PyExpression>): MutableList<PyExpression> {
+    private fun filterVariadicKeywordArguments(arguments: List<PyExpression?>): MutableList<PyExpression> {
         val results: MutableList<PyExpression> = ArrayList()
         for (argument in arguments) {
             if (argument != null && isVariadicKeywordArgument(argument)) {
@@ -1566,7 +1506,7 @@ object PyCallExpressionHelper {
         if (qualifier is PyCallExpression) {
             val callee = qualifier.callee
             if (callee is PyReferenceExpression && PyNames.SUPER == callee.getName()) {
-                val target = (callee as PyReferenceExpression).reference.resolve()
+                val target = callee.reference.resolve()
                 if (target != null && PyBuiltinCache.getInstance(qualifier)
                         .isBuiltin(target)
                 ) return false // super() of unresolved type
