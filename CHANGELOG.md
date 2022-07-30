@@ -3,10 +3,19 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+### Changed
+ - Renamed plugin to "Python Typing Imp"
+
+
+## 0.1.2 — 2022/07/27
+### Changed
+ - Add plugin icon
+
 
 ## 0.1.1 — 2022/06/29
 ### Fixed
  - Bump minimum supported PyCharm version to 2021.1.3
+
 
 ## 0.1.0 — 2022/06/29
 ### Added

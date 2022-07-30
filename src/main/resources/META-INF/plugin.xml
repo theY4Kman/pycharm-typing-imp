@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.y4kstudios.pycharmtypingimp</id>
-    <name>PyCharm Typing Imp</name>
+    <name>Python Typing Imp</name>
     <vendor email="they4kman@gmail.com" url="https://github.com/they4kman">Y4K Studios</vendor>
 
     <depends>com.intellij.modules.platform</depends>
