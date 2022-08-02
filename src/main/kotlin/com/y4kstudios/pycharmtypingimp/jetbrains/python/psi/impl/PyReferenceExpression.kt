@@ -21,6 +21,8 @@ import com.jetbrains.python.psi.resolve.RatedResolveResult
 import com.jetbrains.python.psi.types.*
 import com.jetbrains.python.refactoring.PyDefUseUtil
 import one.util.streamex.StreamEx
+import java.util.stream.Collector
+import java.util.stream.Collectors
 
 /* !!!
  * NOTE: the below methods are lifted directly from com.jetbrains.python.psi.impl.PyReferenceExpressionImpl.
@@ -75,15 +77,11 @@ internal fun PyReferenceExpression.getDescriptorType(typeFromTargets: PyType?, c
         resolveContext
     )
     if (members == null || members.isEmpty()) return null
-    val type = StreamEx.of(members)
+    val type = members
         .map { obj: RatedResolveResult -> obj.element }
-        .select(PyCallable::class.java)
-        .map { callable: PyCallable? ->
-            context.getReturnType(
-                callable!!
-            )
-        }
-        .collect(PyTypeUtil.toUnion())
+        .filterIsInstance<PyCallable>()
+        .map { callable: PyCallable -> context.getReturnType(callable) }
+        .let { PyUnionType.union(it) }
     return Ref.create(type)
 }
 
@@ -150,10 +148,10 @@ internal fun getTypeByControlFlow(
         // null means empty set of possible types, Ref(null) means Any
         val combinedType = StreamEx.of(defs)
             .select(ReadWriteInstruction::class.java)
-            .map { instr: ReadWriteInstruction? ->
-                instr!!.getType(context, anchor)
+            .map { instr: ReadWriteInstruction ->
+                instr.getType(context, anchor)
             }
-            .collect(PyTypeUtil.toUnionFromRef())
+            .collect(toUnionFromRef())
         return Ref.deref(combinedType)
     } catch (ignored: PyDefUseUtil.InstructionNotFoundException) {
     }
@@ -329,3 +327,15 @@ internal fun PyReferenceExpression.getGenericTypeFromTarget(
     }
     return null
 }
+
+
+fun toUnionFromRef(): Collector<Ref<PyType?>?, *, Ref<PyType?>?> =
+    Collectors.reducing(null) { accType: Ref<PyType?>?, hintType: Ref<PyType?>? ->
+        if (hintType == null) {
+            accType
+        } else if (accType == null) {
+            hintType
+        } else {
+            Ref.create(PyUnionType.union(accType.get(), hintType.get()))
+        }
+    }

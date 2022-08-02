@@ -3,6 +3,8 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+### Fixed
+ - Remove usages of internal APIs (namely, `PyTypeUtil`)
 
 
 ## 0.1.3 — 2022/07/30

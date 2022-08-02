@@ -29,6 +29,14 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 
 
+fun getTypeMembers(type: PyType?): Collection<PyType> =
+    when (type) {
+        null -> emptyList()
+        is PyUnionType -> type.members
+        else -> listOf(type)
+    }
+
+
 /**
  * Functions common to different implementors of PyCallExpression, with different base classes.
  * User: dcheryasov
@@ -124,10 +132,9 @@ object PyCallExpressionHelper {
                         call
                     )
                 )
-                if (PyTypeUtil.toStream(typeFromProviders).allMatch { it is PyCallableType }) {
-                    PyTypeUtil.toStream(typeFromProviders).forEachOrdered { e ->
-                        callableTypes.add(e)
-                    }
+                val typeMembers = getTypeMembers(typeFromProviders)
+                if (typeMembers.all { it is PyCallableType }) {
+                    typeMembers.toCollection(callableTypes)
                     continue
                 }
             }
@@ -238,7 +245,7 @@ object PyCallExpressionHelper {
         }
 
         val result: MutableList<PyCallableType> = ArrayList()
-        for (type in PyTypeUtil.toStream(calleeType)) {
+        for (type in getTypeMembers(calleeType)) {
             if (type is PyClassType) {
                 val implicitlyInvokedMethods = forEveryScopeTakeOverloadsOtherwiseImplementations(
                     resolveImplicitlyInvokedMethods(type, call, resolveContext),
@@ -302,33 +309,23 @@ object PyCallExpressionHelper {
         resolveContext: PyResolveContext
     ): List<PyCallableType> {
         if (!resolveContext.allowRemote()) return emptyList()
-        val file = call.containingFile
-        if (file == null || !PythonRuntimeService.getInstance()
-                .isInPydevConsole(file)
-        ) return emptyList()
+        val file = call.containingFile ?: return emptyList()
+        if (!PythonRuntimeService.getInstance().isInPydevConsole(file)) return emptyList()
         val calleeType = getCalleeType(call, resolveContext)
-        return PyTypeUtil.toStream(calleeType).select(PyCallableType::class.java).toList()
+        return getTypeMembers(calleeType).filterIsInstance<PyCallableType>()
     }
 
     private fun selectCallableTypes(
         resolveResults: List<PsiElement>,
         context: TypeEvalContext
     ): List<PyCallableType> {
-        return StreamEx
-            .of(resolveResults)
-            .select(PyTypedElement::class.java)
-            .map { element: PyTypedElement? ->
-                context.getType(
-                    element!!
-                )
+        return resolveResults
+            .filterIsInstance<PyTypedElement>()
+            .map { element: PyTypedElement ->
+                context.getType(element)
             }
-            .flatMap { type: PyType? ->
-                PyTypeUtil.toStream(
-                    type
-                )
-            }
-            .select(PyCallableType::class.java)
-            .toList()
+            .flatMap{ type -> getTypeMembers(type) }
+            .filterIsInstance<PyCallableType>()
     }
 
     private fun multiResolveCallee(
