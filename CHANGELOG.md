@@ -3,6 +3,8 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+### Changed
+ - When running in an application where an issue has been fixed, prevent loading of extraneous extensions.
 
 
 ## 0.1.4 — 2022/08/02

@@ -6,6 +6,7 @@ import com.jetbrains.python.psi.PyTargetExpression
 import com.jetbrains.python.psi.PyTupleExpression
 import com.jetbrains.python.psi.types.*
 import com.y4kstudios.pycharmtypingimp.jetbrains.python.psi.impl.getIterationTargetAndSourceType
+import com.y4kstudios.pycharmtypingimp.openapi.extensions.notApplicableOnlyIfBuild
 
 /**
  * Provides proper typing for dict.values() iteration
@@ -13,6 +14,19 @@ import com.y4kstudios.pycharmtypingimp.jetbrains.python.psi.impl.getIterationTar
  * PY-52656: https://youtrack.jetbrains.com/issue/PY-52656/Incorrect-dictvalues-return-type
  */
 class DictViewsTypeProvider : PyTypeProviderBase() {
+    init {
+        notApplicableOnlyIfBuild { baselineVersion, buildNumber ->
+            when(baselineVersion) {
+                // NOTE: these ranges are pulled from the YT issue's "Included in builds" field
+                //  ref: https://youtrack.jetbrains.com/issue/PY-52656/Incorrect-dictvalues-return-type
+                221 -> buildNumber >= 5397
+                222 -> buildNumber >= 3603
+                223 -> buildNumber >= 1613
+                else -> false
+            }
+        }
+    }
+
     override fun getReferenceType(
         target: PsiElement,
         context: TypeEvalContext,
