@@ -41,6 +41,10 @@ repositories {
     }
 }
 
+dependencies {
+    testCompileOnly("junit", "junit", "4.13.1")
+}
+
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
     pluginName.set(properties("pluginName"))
@@ -75,6 +79,16 @@ tasks {
         withType<KotlinCompile> {
             kotlinOptions.jvmTarget = it
         }
+    }
+
+    test {
+        /**
+         * Testing with PY since 2022.1 requires to also add com.intellij.platform.images (automatically provided in PC)
+         *
+         * Ref: https://youtrack.jetbrains.com/issue/IJSDK-1427/Running-tests-for-PyCharm-Professional-is-not-working
+         * Source: https://github.com/bigbear3001/pycharm-plugin-test-test/commit/38df5b1b999ccde10d6eb262600744e3214680cc
+         */
+        intellij.plugins.add("com.intellij.platform.images")
     }
 
     wrapper {
