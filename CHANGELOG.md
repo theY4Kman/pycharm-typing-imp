@@ -3,6 +3,9 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+### Added
+ - Properly substitute generics in implicit descriptor `__get__` calls (see [GH#1](https://github.com/theY4Kman/pycharm-typing-imp/issues/1))
+
 ### Changed
  - When running in an application where an issue has been fixed, prevent loading of extraneous extensions.
 

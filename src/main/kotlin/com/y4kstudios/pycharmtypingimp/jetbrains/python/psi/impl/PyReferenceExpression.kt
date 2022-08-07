@@ -20,6 +20,7 @@ import com.jetbrains.python.psi.resolve.QualifiedNameFinder
 import com.jetbrains.python.psi.resolve.RatedResolveResult
 import com.jetbrains.python.psi.types.*
 import com.jetbrains.python.refactoring.PyDefUseUtil
+import com.y4kstudios.pycharmtypingimp.psi.impl.PyDescriptorGetExpression
 import one.util.streamex.StreamEx
 import java.util.stream.Collector
 import java.util.stream.Collectors
@@ -64,7 +65,9 @@ internal fun PyReferenceExpression.getCallableType(context: TypeEvalContext): Py
     return PyCallExpressionHelper.getCalleeType(callExpression, PyResolveContext.defaultContext(context))
 }
 
-internal fun PyReferenceExpression.getDescriptorType(typeFromTargets: PyType?, context: TypeEvalContext): Ref<PyType>? {
+internal fun PyReferenceExpression.getDescriptorType(
+    typeFromTargets: PyType?, context: TypeEvalContext, substituteGenerics: Boolean = false
+): Ref<PyType>? {
     if (!isQualified) return null
     val targetType = PyUtil.`as`(
         typeFromTargets,
@@ -77,10 +80,22 @@ internal fun PyReferenceExpression.getDescriptorType(typeFromTargets: PyType?, c
         resolveContext
     )
     if (members == null || members.isEmpty()) return null
+
+    val getCallableType =
+        if (substituteGenerics) {
+            val pyDescriptorGetExpression = PyDescriptorGetExpression(this);
+            { callable: PyCallable ->
+                callable.getCallType(context, pyDescriptorGetExpression)
+            }
+        } else
+            { callable: PyCallable ->
+                context.getReturnType(callable)
+            }
+
     val type = members
         .map { obj: RatedResolveResult -> obj.element }
         .filterIsInstance<PyCallable>()
-        .map { callable: PyCallable -> context.getReturnType(callable) }
+        .map(getCallableType)
         .let { PyUnionType.union(it) }
     return Ref.create(type)
 }
