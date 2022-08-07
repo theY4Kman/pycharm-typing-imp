@@ -9,6 +9,7 @@ Improve the typing inference in PyCharm (or the Python plugin in other IDEs). Do
 
 Current feature set:
  - `__getattr__` and `__getattribute__` typing ([PY-21069](https://youtrack.jetbrains.com/issue/PY-21069/Annotated-return-types-for-getattr-and-getattribute-methods-are-not-taken-into-account-by-type-checker))
+ - Generic substitutions for implicit descriptor `__get__` calls ([PY-55531](https://youtrack.jetbrains.com/issue/PY-55531/Pycharm-cant-handle-typing-of-get-method-of-descriptors))
  - Fixed: ~Proper iteration typing for `dict.values` ([PY-52656](https://youtrack.jetbrains.com/issue/PY-52656/Incorrect-dictvalues-return-type))~
 <!-- Plugin description end -->
 
