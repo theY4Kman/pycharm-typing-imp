@@ -27,12 +27,14 @@ class GetattrTypeProvider : PyTypeProviderBase() {
         // Quick escape for non-qualified expressions
         if (!referenceExpression.isQualified) return null
 
+        // Escape quickly if qualifier isn't typed (idk why that would ever happen)
+        val qualifier = referenceExpression.qualifier as? PyTypedElement ?: return null
+
         // Defer to other typing providers if they successfully provide typing
         // (This allows, e.g., instance attribute and descriptor types to be returned)
         val knownType = referenceExpression.getPyCharmType(context)
-        if (knownType != null) return knownType
+        if (knownType != null) return null
 
-        val qualifier = referenceExpression.qualifier as? PyTypedElement ?: return null
         val qualifierType = context.getType(qualifier) ?: return null
         if (qualifierType !is PyClassType) return null
 
