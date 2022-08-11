@@ -3,6 +3,8 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+### Fixed
+ - Ensure proper `instance` and `owner` arguments are passed to implicit descriptor `__get__` calls
 
 
 ## 0.2.0 — 2022/08/07
