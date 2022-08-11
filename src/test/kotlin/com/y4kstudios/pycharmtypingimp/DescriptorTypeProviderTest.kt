@@ -105,4 +105,74 @@ class DescriptorTypeProviderTest : PyTypingTestCase() {
             rv<caret>al
         """.trimIndent())
     }
+
+    @Test
+    fun testOwnerTypedDescriptorGetFromInstance() {
+        doTest("Foo", """
+            from typing import Type, TypeVar
+
+            T = TypeVar('T')
+
+            class Attr:
+                def __get__(self, instance, owner: Type[T]) -> T: ...
+
+            class Foo:
+                my_attr = Attr()
+
+            foo = Foo()
+            foo.my_<caret>attr
+        """.trimIndent())
+    }
+
+    @Test
+    fun testOwnerTypedDescriptorGetFromOwner() {
+        doTest("Foo", """
+            from typing import Type, TypeVar
+
+            T = TypeVar('T')
+
+            class Attr:
+                def __get__(self, instance, owner: Type[T]) -> T: ...
+
+            class Foo:
+                my_attr = Attr()
+
+            Foo.my_<caret>attr
+        """.trimIndent())
+    }
+
+    @Test
+    fun testInstanceTypedDescriptorGetFromInstance() {
+        doTest("Foo", """
+            from typing import Type, TypeVar
+
+            T = TypeVar('T')
+
+            class Attr:
+                def __get__(self, instance: T, owner) -> T: ...
+
+            class Foo:
+                my_attr = Attr()
+
+            foo = Foo()
+            foo.my_<caret>attr
+        """.trimIndent())
+    }
+
+    @Test
+    fun testInstanceTypedDescriptorGetFromOwner() {
+        doTest("None", """
+            from typing import Type, TypeVar
+
+            T = TypeVar('T')
+
+            class Attr:
+                def __get__(self, instance: T, owner) -> T: ...
+
+            class Foo:
+                my_attr = Attr()
+
+            Foo.my_<caret>attr
+        """.trimIndent())
+    }
 }

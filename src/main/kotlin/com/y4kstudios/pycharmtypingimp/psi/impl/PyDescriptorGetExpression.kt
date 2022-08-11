@@ -3,6 +3,7 @@ package com.y4kstudios.pycharmtypingimp.psi.impl
 import com.intellij.lang.ASTNode
 import com.intellij.lang.Language
 import com.intellij.navigation.ItemPresentation
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.TextRange
@@ -11,11 +12,9 @@ import com.intellij.psi.scope.PsiScopeProcessor
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.util.castSafelyTo
-import com.jetbrains.python.psi.PyCallSiteExpression
-import com.jetbrains.python.psi.PyCallable
-import com.jetbrains.python.psi.PyExpression
-import com.jetbrains.python.psi.PyReferenceExpression
+import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
+import com.jetbrains.python.psi.types.PyClassType
 import com.jetbrains.python.psi.types.PyType
 import com.jetbrains.python.psi.types.TypeEvalContext
 import javax.swing.Icon
@@ -32,7 +31,21 @@ class PyDescriptorGetExpression(private val referenceExpression: PyReferenceExpr
     }
 
     override fun getArguments(resolvedCallee: PyCallable?): MutableList<PyExpression> {
-        return mutableListOf()
+        if (!referenceExpression.isQualified) return mutableListOf()
+
+        val qualifier = referenceExpression.qualifier ?: return mutableListOf()
+        val context = TypeEvalContext.codeAnalysis(referenceExpression.project, referenceExpression.containingFile)
+
+        val qualifierType = context.getType(qualifier) as? PyClassType ?: return mutableListOf()
+        return if (qualifierType.isDefinition) {
+            val pyElementGenerator = referenceExpression.project.service<PyElementGenerator>()
+            val pyFile = referenceExpression.containingFile as PyFile
+            val pyNone = pyElementGenerator.createExpressionFromText(pyFile.languageLevel, "None")
+            mutableListOf(pyNone, qualifier)
+        } else {
+            val pyTypeExpr = PyDummyTypedExpression(qualifier, qualifierType.toClass())
+            mutableListOf(qualifier, pyTypeExpr)
+        }
     }
 
     override fun <T : Any?> getUserData(key: Key<T>): T? = referenceExpression.getUserData(key)
