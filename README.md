@@ -1,8 +1,8 @@
 # Python Typing Imp plugin
 
 ![Build](https://github.com/theY4Kman/pycharm-typing-imp/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/com.y4kstudios.pycharmtypingimp.svg)](https://plugins.jetbrains.com/plugin/com.y4kstudios.pycharmtypingimp)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/com.y4kstudios.pycharmtypingimp.svg)](https://plugins.jetbrains.com/plugin/com.y4kstudios.pycharmtypingimp)
+[![Version](https://img.shields.io/jetbrains/plugin/v/com.y4kstudios.pycharmtypingimp.svg)](https://plugins.jetbrains.com/plugin/19440-python-typing-imp)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/com.y4kstudios.pycharmtypingimp.svg)](https://plugins.jetbrains.com/plugin/19440-python-typing-imp)
 
 <!-- Plugin description -->
 Improve the typing inference in PyCharm (or the Python plugin in other IDEs). Does the things PyCharm should do, before JetBrains can add them to mainline.
