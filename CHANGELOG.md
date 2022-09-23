@@ -3,6 +3,8 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+### BREAKING CHANGES
+ - Added support for 2022.3, requiring a source/target Java compatibility of 17. Minimum supported PyCharm version is now 2022.3.
 
 
 ## 0.2.1 — 2022/08/11
