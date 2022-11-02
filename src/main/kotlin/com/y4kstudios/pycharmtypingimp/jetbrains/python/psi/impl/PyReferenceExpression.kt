@@ -236,7 +236,7 @@ internal fun PyReferenceExpression.getTypeFromTarget(
                 !(qualifierType is PyModuleType || qualifierType is PyImportedModuleType)
             if (possiblyParameterizedQualifier && PyTypeChecker.hasGenerics(type, context)) {
                 val substitutions =
-                    PyTypeChecker.unifyGenericCallWithParamSpecs(qualifier, emptyMap(), context)
+                    PyTypeChecker.unifyGenericCall(qualifier, emptyMap(), context)
                 if (substitutions != null) {
                     val substituted = PyTypeChecker.substitute(type, substitutions, context)
                     if (substituted != null) {
