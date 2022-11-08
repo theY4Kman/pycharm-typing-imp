@@ -3,6 +3,8 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+### Fixed
+ - Fixed `NoSuchMethodError` against `PyTypeChecker.unifyGenericCallWithParamSpecs` in 2022.3 due to method renaming
 
 
 ## 1.0.0 — 2022/09/23

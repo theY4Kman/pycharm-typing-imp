@@ -1,14 +1,11 @@
 package com.y4kstudios.pycharmtypingimp.psi.types
 
-import com.jetbrains.python.PyNames
-import com.jetbrains.python.psi.AccessDirection
-import com.jetbrains.python.psi.PyCallable
 import com.jetbrains.python.psi.PyReferenceExpression
-import com.jetbrains.python.psi.PyTypedElement
-import com.jetbrains.python.psi.resolve.PyResolveContext
-import com.jetbrains.python.psi.types.*
+import com.jetbrains.python.psi.types.PyNoneType
+import com.jetbrains.python.psi.types.PyType
+import com.jetbrains.python.psi.types.PyTypeProviderBase
+import com.jetbrains.python.psi.types.TypeEvalContext
 import com.y4kstudios.pycharmtypingimp.jetbrains.python.psi.impl.getDescriptorType
-import com.y4kstudios.pycharmtypingimp.jetbrains.python.psi.impl.getPyCharmType
 import com.y4kstudios.pycharmtypingimp.jetbrains.python.psi.impl.getTypeFromTargets
 
 /**

@@ -11,7 +11,7 @@ import com.intellij.psi.*
 import com.intellij.psi.scope.PsiScopeProcessor
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.SearchScope
-import com.intellij.util.castSafelyTo
+import com.intellij.util.asSafely
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.types.PyClassType
@@ -27,7 +27,7 @@ class PyDescriptorGetExpression(private val referenceExpression: PyReferenceExpr
     override fun getReceiver(resolvedCallee: PyCallable?): PyExpression? {
         val context = TypeEvalContext.codeAnalysis(referenceExpression.project, referenceExpression.containingFile)
         val resolveContext = PyResolveContext.noProperties(context)
-        return referenceExpression.followAssignmentsChain(resolveContext).element.castSafelyTo<PyExpression>()
+        return referenceExpression.followAssignmentsChain(resolveContext).element.asSafely<PyExpression>()
     }
 
     override fun getArguments(resolvedCallee: PyCallable?): MutableList<PyExpression> {

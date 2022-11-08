@@ -1321,7 +1321,7 @@ object PyCallExpressionHelper {
             allMappedParameters[receiver] = firstImplicit
         }
         allMappedParameters.putAll(mappedExplicitParameters)
-        return PyTypeChecker.unifyGenericCallWithParamSpecs(
+        return PyTypeChecker.unifyGenericCall(
             receiver,
             allMappedParameters,
             context
