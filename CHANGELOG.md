@@ -3,6 +3,9 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+
+
+## 1.1.0 — 2022/11/10
 ### Added
  - Properly type built-in collections initialized with `dict.items` calls (note: tuples are NOT fixed, and will be in form `tuple[KeyType, ...]`)
 
