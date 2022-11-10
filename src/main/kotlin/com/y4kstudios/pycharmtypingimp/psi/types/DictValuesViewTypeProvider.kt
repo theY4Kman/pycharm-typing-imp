@@ -2,8 +2,7 @@ package com.y4kstudios.pycharmtypingimp.psi.types
 
 import com.intellij.openapi.util.Ref
 import com.intellij.psi.PsiElement
-import com.jetbrains.python.psi.PyTargetExpression
-import com.jetbrains.python.psi.PyTupleExpression
+import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.types.*
 import com.y4kstudios.pycharmtypingimp.jetbrains.python.psi.impl.getIterationTargetAndSourceType
 import com.y4kstudios.pycharmtypingimp.openapi.extensions.notApplicableOnlyIfBuild
@@ -11,9 +10,10 @@ import com.y4kstudios.pycharmtypingimp.openapi.extensions.notApplicableOnlyIfBui
 /**
  * Provides proper typing for dict.values() iteration
  *
- * PY-52656: https://youtrack.jetbrains.com/issue/PY-52656/Incorrect-dictvalues-return-type
+ * Addresses:
+ *  - [PY-52656](https://youtrack.jetbrains.com/issue/PY-52656/Incorrect-dictvalues-return-type)
  */
-class DictViewsTypeProvider : PyTypeProviderBase() {
+class DictValuesViewTypeProvider : PyTypeProviderBase() {
     init {
         notApplicableOnlyIfBuild { baselineVersion, buildNumber ->
             when(baselineVersion) {

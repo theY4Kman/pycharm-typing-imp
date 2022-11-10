@@ -1,15 +1,33 @@
 <idea-plugin>
-    <id>com.y4kstudios.pycharmtypingimp</id>
-    <name>Python Typing Imp</name>
-    <vendor email="they4kman@gmail.com" url="https://github.com/they4kman">Y4K Studios</vendor>
+  <id>com.y4kstudios.pycharmtypingimp</id>
+  <name>Python Typing Imp</name>
+  <vendor email="they4kman@gmail.com" url="https://github.com/they4kman">Y4K Studios</vendor>
 
-    <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.modules.lang</depends>
-    <depends>com.intellij.modules.python</depends>
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.lang</depends>
+  <depends>com.intellij.modules.python</depends>
 
-    <extensions defaultExtensionNs="Pythonid">
-        <typeProvider implementation="com.y4kstudios.pycharmtypingimp.psi.types.GetattrTypeProvider" order="last"/>
-        <typeProvider implementation="com.y4kstudios.pycharmtypingimp.psi.types.DescriptorTypeProvider" order="last"/>
-        <typeProvider implementation="com.y4kstudios.pycharmtypingimp.psi.types.DictViewsTypeProvider" order="last"/>
-    </extensions>
+  <extensions defaultExtensionNs="Pythonid">
+    <!--
+      NB: We don't place ourselves first, because, in general, the earliest extensions get called the
+          most; since our providers are primarily single-purpose, limited-circumstance extensions,
+          we want to be as far down the list as possible to avoid unnecessary computation.
+     -->
+    <typeProvider
+      implementation="com.y4kstudios.pycharmtypingimp.psi.types.GetattrTypeProvider"
+      id="PythonTypingImp_GetattrTypeProvider"
+      order="last"/>
+    <typeProvider
+      implementation="com.y4kstudios.pycharmtypingimp.psi.types.DescriptorTypeProvider"
+      id="PythonTypingImp_DescriptorTypeProvider"
+      order="last"/>
+    <typeProvider
+      implementation="com.y4kstudios.pycharmtypingimp.psi.types.DictValuesViewTypeProvider"
+      id="PythonTypingImp_DictValuesViewTypeProvider"
+      order="last"/>
+    <typeProvider
+      implementation="com.y4kstudios.pycharmtypingimp.psi.types.DictItemsViewTypeProvider"
+      id="PythonTypingImp_DictItemsViewTypeProvider"
+      order="last"/>
+  </extensions>
 </idea-plugin>
