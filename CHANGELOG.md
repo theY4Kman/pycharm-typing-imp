@@ -4,7 +4,8 @@
 
 ## [Unreleased]
 ### Changed
- - Update supported ranges for `dict.items` collections fixes
+ - Added support for 2023.1
+ - Updated supported ranges for `dict.items` collections fixes
 
 
 ## 1.1.0 — 2022/11/10
