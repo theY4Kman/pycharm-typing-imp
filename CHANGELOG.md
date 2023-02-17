@@ -3,6 +3,9 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+
+
+## 1.1.1 — 2023/02/17
 ### Changed
  - Added support for 2023.1
  - Updated supported ranges for `dict.items` collections fixes
