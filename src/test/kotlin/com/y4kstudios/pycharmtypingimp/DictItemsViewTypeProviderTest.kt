@@ -13,6 +13,8 @@ class DictItemsViewTypeProviderTest : PyTypingTestCase() {
         """.trimIndent())
     }
 
+    // NOTE: this test is expected to fail, until `PyCollectionTypeImpl.getIteratedItemType()` is fixed
+    //       see #com.y4kstudios.pycharmtypingimp.psi.types.DictItemsViewTypeProvider.getCallType for more info
     @Test
     fun testDictItemsViewTuplifiedType() {
         doTest("tuple[tuple[str, float], ...]", """

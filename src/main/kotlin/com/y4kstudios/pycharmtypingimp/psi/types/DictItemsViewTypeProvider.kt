@@ -5,6 +5,7 @@ import com.jetbrains.python.psi.LanguageLevel
 import com.jetbrains.python.psi.PyCallSiteExpression
 import com.jetbrains.python.psi.PyFunction
 import com.jetbrains.python.psi.types.*
+import com.y4kstudios.pycharmtypingimp.openapi.extensions.notApplicableOnlyIfBuild
 
 /**
  * Provides proper typing for dict.values() iteration
@@ -13,6 +14,19 @@ import com.jetbrains.python.psi.types.*
  *  - [PY-30709](https://youtrack.jetbrains.com/issue/PY-30709/Incorrect-type-inference-of-dictitems)
  */
 class DictItemsViewTypeProvider : PyTypeProviderBase() {
+    init {
+        notApplicableOnlyIfBuild { baselineVersion, buildNumber ->
+            when(baselineVersion) {
+                // NOTE: these ranges are pulled from the YT issue's "Included in builds" field
+                //  ref: https://youtrack.jetbrains.com/issue/PY-30709/Incorrect-type-inference-of-dictitems
+                // 222 -> buildNumber >= 3603  // unsupported by this plugin
+                // 223 -> buildNumber >= 8294  // tested not working
+                231 -> buildNumber >= 2977
+                else -> false
+            }
+        }
+    }
+
     companion object {
         private const val DICT_ITEMS = "_dict_items"
         private const val COLLECTIONS_DICT_ITEMS = "_collections_abc.dict_items"
