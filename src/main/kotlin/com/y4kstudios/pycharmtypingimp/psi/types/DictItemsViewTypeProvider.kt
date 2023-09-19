@@ -22,7 +22,7 @@ class DictItemsViewTypeProvider : PyTypeProviderBase() {
                 // 222 -> buildNumber >= 3603  // unsupported by this plugin
                 // 223 -> buildNumber >= 8294  // tested not working
                 231 -> buildNumber >= 2977
-                else -> false
+                else -> baselineVersion > 231
             }
         }
     }

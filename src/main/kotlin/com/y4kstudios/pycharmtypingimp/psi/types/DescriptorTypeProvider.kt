@@ -11,7 +11,7 @@ import com.y4kstudios.pycharmtypingimp.jetbrains.python.psi.impl.getTypeFromTarg
 /**
  * Provides typing info for descriptor-based class attributes served by __get__
  *
- * PY-55531: https://youtrack.jetbrains.com/issue/PY-55531/Pycharm-cant-handle-typing-of-get-method-of-descriptors
+ * PY-55531 (unfixed as of 2023/09/19): https://youtrack.jetbrains.com/issue/PY-55531/Pycharm-cant-handle-typing-of-get-method-of-descriptors
  */
 class DescriptorTypeProvider : PyTypeProviderBase() {
     override fun getReferenceExpressionType(

@@ -3,6 +3,9 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+### Fixed
+ - Ensure fixes are disabled for all major versions after latest "Included in build" version
+
 ### Changed
  - Added support for 2023.2
  - Updated Kotlin to 1.9

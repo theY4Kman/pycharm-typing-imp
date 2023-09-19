@@ -22,7 +22,7 @@ class DictValuesViewTypeProvider : PyTypeProviderBase() {
                 221 -> buildNumber >= 5397
                 222 -> buildNumber >= 3603
                 223 -> buildNumber >= 1613
-                else -> false
+                else -> baselineVersion > 223
             }
         }
     }
