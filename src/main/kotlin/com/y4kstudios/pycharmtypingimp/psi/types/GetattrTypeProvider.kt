@@ -15,9 +15,9 @@ import com.y4kstudios.pycharmtypingimp.jetbrains.python.psi.impl.getPyCharmType
 /**
  * Provides typing info for dynamic class attributes served by __getattr__ or __getattribute__
  *
- * PY-49262 (unfixed as of 2023/09/19): https://youtrack.jetbrains.com/issue/PY-49262/Autocomplete-on-overloaded-getattr-does-not-pick-up-methods-or-attributes-of-type-hinted-class
- * PY-40586 (unfixed as of 2023/09/19): https://youtrack.jetbrains.com/issue/PY-40586/Provide-autocompletions-based-on-the-return-value-of-getattr-on-missing-reference-for-a-class-that-implements-getattr
- * PY-21069 (unfixed as of 2023/09/19): https://youtrack.jetbrains.com/issue/PY-21069/Annotated-return-types-for-getattr-and-getattribute-methods-are-not-taken-into-account-by-type-checker
+ * PY-49262 (unfixed as of 2024/05/27): https://youtrack.jetbrains.com/issue/PY-49262/Autocomplete-on-overloaded-getattr-does-not-pick-up-methods-or-attributes-of-type-hinted-class
+ * PY-40586 (unfixed as of 2024/05/27): https://youtrack.jetbrains.com/issue/PY-40586/Provide-autocompletions-based-on-the-return-value-of-getattr-on-missing-reference-for-a-class-that-implements-getattr
+ * PY-21069 (unfixed as of 2024/05/27): https://youtrack.jetbrains.com/issue/PY-21069/Annotated-return-types-for-getattr-and-getattribute-methods-are-not-taken-into-account-by-type-checker
  */
 class GetattrTypeProvider : PyTypeProviderBase() {
     override fun getReferenceExpressionType(

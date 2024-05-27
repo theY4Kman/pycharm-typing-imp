@@ -1,4 +1,5 @@
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = project.findProperty(key).toString()
@@ -9,7 +10,8 @@ plugins {
     // Kotlin support
     id("org.jetbrains.kotlin.jvm") version "1.9.0"
     // Gradle IntelliJ Plugin
-    id("org.jetbrains.intellij") version "1.15.0"
+    id("org.jetbrains.intellij.platform") version "2.0.0-beta3"
+//    id("org.jetbrains.intellij") version "1.15.0"
     // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "1.3.1"
     // Gradle Qodana Plugin
@@ -24,35 +26,41 @@ repositories {
     mavenCentral()
 
     maven {
-        name = "intellij-releases"
-        url = uri("https://www.jetbrains.com/intellij-repository/releases")
-    }
-    maven {
-        name = "intellij-snapshots"
-        url = uri("https://www.jetbrains.com/intellij-repository/snapshots")
-    }
-    maven {
-        name = "intellij-3rd-party"
-        url = uri("https://cache-redirector.jetbrains.com/intellij-dependencies")
-    }
-    maven {
         name = "rd-snapshots"
         url = uri("https://www.myget.org/F/rd-snapshots/maven/")
+    }
+
+    intellijPlatform {
+        defaultRepositories()
     }
 }
 
 dependencies {
     testCompileOnly("junit", "junit", "4.13.1")
+
+    intellijPlatform {
+        val type = providers.gradleProperty("platformType")
+        val version = providers.gradleProperty("platformVersion")
+        create(type, version)
+
+        instrumentationTools()
+        testFramework(TestFrameworkType.Platform.JUnit4)
+
+        plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
+        bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
+    }
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-intellij {
-    pluginName.set(properties("pluginName"))
-    version.set(properties("platformVersion"))
-    type.set(properties("platformType"))
+intellijPlatform {
+    // NOTE: disabled, as this prevents the building of the plugin while the sandbox IDE (i.e. runIde)
+    //       is being used. When we begin to have a settings panel, we may consider re-enabling this.
+    buildSearchableOptions = false
 
-    // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
-    plugins.set(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
+    pluginConfiguration {
+        name = properties("pluginName")
+        version = properties("platformVersion")
+    }
 }
 
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
@@ -88,7 +96,11 @@ tasks {
          * Ref: https://youtrack.jetbrains.com/issue/IJSDK-1427/Running-tests-for-PyCharm-Professional-is-not-working
          * Source: https://github.com/bigbear3001/pycharm-plugin-test-test/commit/38df5b1b999ccde10d6eb262600744e3214680cc
          */
-        intellij.plugins.add("com.intellij.platform.images")
+        dependencies {
+            intellijPlatform {
+                bundledPlugin("com.intellij.platform.images")
+            }
+        }
     }
 
     wrapper {
@@ -96,7 +108,7 @@ tasks {
     }
 
     patchPluginXml {
-        version.set(properties("pluginVersion"))
+        pluginVersion = properties("pluginVersion")
         sinceBuild.set(properties("pluginSinceBuild"))
         untilBuild.set(properties("pluginUntilBuild"))
 
@@ -133,15 +145,9 @@ tasks {
         )
     }
 
-    buildSearchableOptions {
-        // NOTE: disabled, as this prevents the building of the plugin while the sandbox IDE (i.e. runIde)
-        //       is being used. When we begin to have a settings panel, we may consider re-enabling this.
-        enabled = false
-    }
-
     // Configure UI tests plugin
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
-    runIdeForUiTests {
+    testIdeUi {
         systemProperty("robot-server.port", "8082")
         systemProperty("ide.mac.message.dialogs.as.sheets", "false")
         systemProperty("jb.privacy.policy.text", "<!--999.999-->")

@@ -1,6 +1,7 @@
 package com.y4kstudios.pycharmtypingimp.jetbrains.python.psi.impl
 
 import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.ast.PyAstExpression
 import com.jetbrains.python.psi.PyComprehensionElement
 import com.jetbrains.python.psi.PyExpression
 import com.jetbrains.python.psi.PyForPart
@@ -30,10 +31,10 @@ internal fun PyTargetExpression.getIterationTargetAndSourceType(
     )
     if (comprh != null) {
         for (c in comprh.forComponents) {
-            val expr = c.iteratorVariable
+            val expr = c.getIteratorVariable<PyExpression>()
             if (PsiTreeUtil.isAncestor(expr, this, false)) {
                 target = expr
-                source = c.iteratedList
+                source = c.getIteratedList()
             }
         }
     }

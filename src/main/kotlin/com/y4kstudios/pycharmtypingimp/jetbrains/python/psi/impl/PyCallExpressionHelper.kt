@@ -11,11 +11,13 @@ import com.intellij.util.ObjectUtils
 import com.intellij.util.containers.ContainerUtil
 import com.jetbrains.python.PyNames
 import com.jetbrains.python.PythonRuntimeService
+import com.jetbrains.python.ast.PyAstFunction
 import com.jetbrains.python.codeInsight.controlflow.ScopeOwner
 import com.jetbrains.python.codeInsight.dataflow.scope.ScopeUtil
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.PyCallExpression.PyArgumentsMapping
 import com.jetbrains.python.psi.impl.*
+import com.jetbrains.python.psi.impl.PyCallExpressionHelper
 import com.jetbrains.python.psi.impl.references.PyReferenceImpl
 import com.jetbrains.python.psi.resolve.*
 import com.jetbrains.python.psi.types.*
@@ -151,7 +153,7 @@ object PyCallExpressionHelper {
     fun getReceiver(call: PyCallExpression, resolvedCallee: PyCallable?): PyExpression? {
         if (resolvedCallee is PyFunction) {
             val function = resolvedCallee
-            if (PyNames.NEW != function.name && function.modifier == PyFunction.Modifier.STATICMETHOD) {
+            if (PyNames.NEW != function.name && function.modifier == PyAstFunction.Modifier.STATICMETHOD) {
                 return null
             }
         }
@@ -159,9 +161,7 @@ object PyCallExpressionHelper {
         if (callee != null && isImplicitlyInvokedMethod(resolvedCallee) && resolvedCallee!!.name != callee.name) {
             return callee
         }
-        return if (callee is PyQualifiedExpression) {
-            callee.qualifier
-        } else null
+        return (callee as? PyQualifiedExpression)?.qualifier
     }
 
     @Contract("null -> false")
@@ -359,7 +359,7 @@ object PyCallExpressionHelper {
             if (wrapperInfo != null) {
                 val wrapperName = wrapperInfo.getFirst()
                 val wrappedModifier =
-                    if (PyNames.CLASSMETHOD == wrapperName) PyFunction.Modifier.CLASSMETHOD else (if (PyNames.STATICMETHOD == wrapperName) PyFunction.Modifier.STATICMETHOD else null)!!
+                    if (PyNames.CLASSMETHOD == wrapperName) PyAstFunction.Modifier.CLASSMETHOD else (if (PyNames.STATICMETHOD == wrapperName) PyAstFunction.Modifier.STATICMETHOD else null)!!
                 val result = ClarifiedResolveResult(
                     resolveResult,
                     wrapperInfo.getSecond(),
@@ -500,7 +500,7 @@ object PyCallExpressionHelper {
      */
     private fun getImplicitArgumentCount(
         callable: PyCallable,
-        modifier: PyFunction.Modifier?,
+        modifier: PyAstFunction.Modifier?,
         isConstructorCall: Boolean,
         isByInstance: Boolean,
         isByClass: Boolean
@@ -527,9 +527,9 @@ object PyCallExpressionHelper {
         }
 
         // decorators?
-        if (modifier == PyFunction.Modifier.STATICMETHOD) {
+        if (modifier == PyAstFunction.Modifier.STATICMETHOD) {
             if (isByInstance && implicit_offset > 0) implicit_offset -= 1 // might have marked it as implicit 'self'
-        } else if (modifier == PyFunction.Modifier.CLASSMETHOD) {
+        } else if (modifier == PyAstFunction.Modifier.CLASSMETHOD) {
             if (!isByInstance) implicit_offset += 1 // Both Foo.method() and foo.method() have implicit the first arg
         }
         return implicit_offset
@@ -822,6 +822,7 @@ object PyCallExpressionHelper {
             implicitParameters,
             mappingResults.mappedParameters,
             mappingResults.unmappedParameters,
+            mappingResults.unmappedContainerParameters,
             mappingResults.unmappedArguments,
             mappingResults.parametersMappedToVariadicPositionalArguments,
             mappingResults.parametersMappedToVariadicKeywordArguments,
@@ -898,6 +899,7 @@ object PyCallExpressionHelper {
             implicitParameters,
             mappingResults.mappedParameters,
             mappingResults.unmappedParameters,
+            mappingResults.unmappedContainerParameters,
             mappingResults.unmappedArguments,
             mappingResults.parametersMappedToVariadicPositionalArguments,
             mappingResults.parametersMappedToVariadicKeywordArguments,
@@ -1057,25 +1059,29 @@ object PyCallExpressionHelper {
         ) { p: PyCallableParameter -> p.parameter is PySlashParameter }
         var seenSingleStar = false
         var mappedVariadicArgumentsToParameters = false
-        val mappedParameters: MutableMap<PyExpression, PyCallableParameter> =
-            LinkedHashMap()
+        val mappedParameters: MutableMap<PyExpression, PyCallableParameter> = LinkedHashMap()
         val unmappedParameters: MutableList<PyCallableParameter> = ArrayList()
+        val unmappedContainerParameters: MutableList<PyCallableParameter> = ArrayList()
         val unmappedArguments: MutableList<PyExpression> = ArrayList()
         val parametersMappedToVariadicKeywordArguments: MutableList<PyCallableParameter> =
             ArrayList()
         val parametersMappedToVariadicPositionalArguments: MutableList<PyCallableParameter> =
             ArrayList()
-        val tupleMappedParameters: MutableMap<PyExpression, PyCallableParameter> =
-            LinkedHashMap()
+        val tupleMappedParameters: MutableMap<PyExpression, PyCallableParameter> = LinkedHashMap()
+
         val positionalResults = filterPositionalAndVariadicArguments(arguments)
         val keywordArguments = filterKeywordArguments(arguments)
         val variadicPositionalArguments = positionalResults.variadicPositionalArguments
         val positionalComponentsOfVariadicArguments: Set<PyExpression> =
             LinkedHashSet(positionalResults.componentsOfVariadicPositionalArguments)
-        val variadicKeywordArguments = filterVariadicKeywordArguments(arguments)
+        val variadicKeywordArguments =
+            filterVariadicKeywordArguments(arguments)
+
         val allPositionalArguments = positionalResults.allPositionalArguments
+
         for (parameter in parameters) {
             val psi = parameter.parameter
+
             if (psi is PyNamedParameter || psi == null) {
                 val parameterName = parameter.name
                 if (parameter.isPositionalContainer) {
@@ -1086,6 +1092,9 @@ object PyCallExpressionHelper {
                     }
                     if (variadicPositionalArguments.size == 1) {
                         mappedParameters[variadicPositionalArguments[0]] = parameter
+                    }
+                    if (variadicPositionalArguments.size != 1 && allPositionalArguments.size == 0) {
+                        unmappedContainerParameters.add(parameter)
                     }
                     allPositionalArguments.clear()
                     variadicPositionalArguments.clear()
@@ -1100,7 +1109,10 @@ object PyCallExpressionHelper {
                     variadicKeywordArguments.clear()
                 } else if (seenSingleStar) {
                     val keywordArgument: PyExpression? =
-                        removeKeywordArgument(keywordArguments, parameterName)
+                        removeKeywordArgument(
+                            keywordArguments,
+                            parameterName
+                        )
                     if (keywordArgument != null) {
                         mappedParameters[keywordArgument] = parameter
                     } else if (variadicKeywordArguments.isEmpty()) {
@@ -1122,13 +1134,17 @@ object PyCallExpressionHelper {
                 } else {
                     if (positionalOnlyMode) {
                         val positionalArgument = next(allPositionalArguments)
+
                         if (positionalArgument != null) {
                             mappedParameters[positionalArgument] = parameter
                         } else if (!parameter.hasDefaultValue()) {
                             unmappedParameters.add(parameter)
                         }
                     } else if (allPositionalArguments.isEmpty()) {
-                        val keywordArgument = removeKeywordArgument(keywordArguments, parameterName)
+                        val keywordArgument = removeKeywordArgument(
+                            keywordArguments,
+                            parameterName
+                        )
                         if (keywordArgument != null) {
                             mappedParameters[keywordArgument] = parameter
                         } else if (variadicPositionalArguments.isEmpty() && variadicKeywordArguments.isEmpty() && !parameter.hasDefaultValue()) {
@@ -1160,7 +1176,7 @@ object PyCallExpressionHelper {
                     tupleMappedParameters[positionalArgument] = parameter
                     val tupleMappingResults = mapComponentsOfTupleParameter(
                         positionalArgument,
-                        psi
+                        (psi as PyTupleParameter?)!!
                     )
                     mappedParameters.putAll(tupleMappingResults.parameters)
                     unmappedParameters.addAll(tupleMappingResults.unmappedParameters)
@@ -1180,17 +1196,21 @@ object PyCallExpressionHelper {
                 unmappedParameters.add(parameter)
             }
         }
+
         if (mappedVariadicArgumentsToParameters) {
             variadicPositionalArguments.clear()
             variadicKeywordArguments.clear()
         }
+
         unmappedArguments.addAll(allPositionalArguments)
         unmappedArguments.addAll(keywordArguments)
         unmappedArguments.addAll(variadicPositionalArguments)
         unmappedArguments.addAll(variadicKeywordArguments)
+
         return ArgumentMappingResults(
             mappedParameters,
             unmappedParameters,
+            unmappedContainerParameters,
             unmappedArguments,
             parametersMappedToVariadicPositionalArguments,
             parametersMappedToVariadicKeywordArguments,
@@ -1515,6 +1535,7 @@ object PyCallExpressionHelper {
     class ArgumentMappingResults internal constructor(
         val mappedParameters: Map<PyExpression, PyCallableParameter>,
         val unmappedParameters: List<PyCallableParameter>,
+        val unmappedContainerParameters: List<PyCallableParameter>,
         val unmappedArguments: List<PyExpression>,
         val parametersMappedToVariadicPositionalArguments: List<PyCallableParameter>,
         val parametersMappedToVariadicKeywordArguments: List<PyCallableParameter>,
@@ -1536,7 +1557,7 @@ object PyCallExpressionHelper {
     private class ClarifiedResolveResult internal constructor(
         val myOriginalResolveResult: QualifiedRatedResolveResult,
         val myClarifiedResolved: PsiElement,
-        val myWrappedModifier: PyFunction.Modifier?,
+        val myWrappedModifier: PyAstFunction.Modifier?,
         val myIsConstructor: Boolean
     )
 }

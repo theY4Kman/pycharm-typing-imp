@@ -19,9 +19,9 @@ class DictValuesViewTypeProvider : PyTypeProviderBase() {
             when(baselineVersion) {
                 // NOTE: these ranges are pulled from the YT issue's "Included in builds" field
                 //  ref: https://youtrack.jetbrains.com/issue/PY-52656/Incorrect-dictvalues-return-type
-                221 -> buildNumber >= 5397
-                222 -> buildNumber >= 3603
-                223 -> buildNumber >= 1613
+                // 221 -> buildNumber >= 5397   // unsupported by this plugin
+                // 222 -> buildNumber >= 3603   // unsupported by this plugin
+                // 223 -> buildNumber >= 1613   // unsupported by this plugin
                 else -> baselineVersion > 223
             }
         }

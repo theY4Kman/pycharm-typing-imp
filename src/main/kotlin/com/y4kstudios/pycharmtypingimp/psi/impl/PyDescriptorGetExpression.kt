@@ -12,6 +12,7 @@ import com.intellij.psi.scope.PsiScopeProcessor
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.util.asSafely
+import com.jetbrains.python.ast.PyAstCallable
 import com.jetbrains.python.psi.*
 import com.jetbrains.python.psi.resolve.PyResolveContext
 import com.jetbrains.python.psi.types.PyClassType
@@ -24,13 +25,13 @@ import javax.swing.Icon
  * An implicit PyCallSiteExpression for descriptor __get__ accesses, allowing generic substitutions on the __get__ call
  */
 class PyDescriptorGetExpression(private val referenceExpression: PyReferenceExpression) : PyCallSiteExpression {
-    override fun getReceiver(resolvedCallee: PyCallable?): PyExpression? {
+    override fun getReceiver(resolvedCallee: PyAstCallable?): PyExpression? {
         val context = TypeEvalContext.codeAnalysis(referenceExpression.project, referenceExpression.containingFile)
         val resolveContext = PyResolveContext.noProperties(context)
         return referenceExpression.followAssignmentsChain(resolveContext).element.asSafely<PyExpression>()
     }
 
-    override fun getArguments(resolvedCallee: PyCallable?): MutableList<PyExpression> {
+    override fun getArguments(resolvedCallee: PyAstCallable?): MutableList<PyExpression> {
         if (!referenceExpression.isQualified) return mutableListOf()
 
         val qualifier = referenceExpression.qualifier ?: return mutableListOf()
@@ -38,7 +39,7 @@ class PyDescriptorGetExpression(private val referenceExpression: PyReferenceExpr
 
         val qualifierType = context.getType(qualifier) as? PyClassType ?: return mutableListOf()
         return if (qualifierType.isDefinition) {
-            val pyElementGenerator = referenceExpression.project.service<PyElementGenerator>()
+            val pyElementGenerator = PyElementGenerator.getInstance(referenceExpression.project)
             val pyFile = referenceExpression.containingFile as PyFile
             val pyNone = pyElementGenerator.createExpressionFromText(pyFile.languageLevel, "None")
             mutableListOf(pyNone, qualifier)

@@ -21,7 +21,7 @@ class DictItemsViewTypeProvider : PyTypeProviderBase() {
                 //  ref: https://youtrack.jetbrains.com/issue/PY-30709/Incorrect-type-inference-of-dictitems
                 // 222 -> buildNumber >= 3603  // unsupported by this plugin
                 // 223 -> buildNumber >= 8294  // tested not working
-                231 -> buildNumber >= 2977
+                // 231 -> buildNumber >= 2977  // unsupported by this plugin
                 else -> baselineVersion > 231
             }
         }

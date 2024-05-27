@@ -22,7 +22,6 @@ import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.FilePropertyPusher;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.StandardFileSystems;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -224,6 +223,7 @@ public abstract class PyTestCase extends UsefulTestCase {
       modificator.addRoot(root, rootType);
       modificator.commitChanges();
     });
+    IndexingTestUtil.waitUntilIndexesAreReadyInAllOpenedProjects();
     try {
       rootConsumer.accept(root);
     }
@@ -234,14 +234,8 @@ public abstract class PyTestCase extends UsefulTestCase {
         modificator.removeRoot(root, rootType);
         modificator.commitChanges();
       });
+      IndexingTestUtil.waitUntilIndexesAreReadyInAllOpenedProjects();
     }
-  }
-
-  protected void dumpSdkRoots() {
-    final Sdk sdk = PythonSdkUtil.findPythonSdk(myFixture.getModule());
-    assertNotNull(sdk);
-    final String[] roots = sdk.getRootProvider().getUrls(OrderRootType.CLASSES);
-    System.out.println(StringUtil.join(roots, "\n"));
   }
 
   protected String getTestDataPath() {
@@ -288,6 +282,7 @@ public abstract class PyTestCase extends UsefulTestCase {
 
   private void setLanguageLevel(@Nullable LanguageLevel languageLevel) {
     PythonLanguageLevelPusher.setForcedLanguageLevel(myFixture.getProject(), languageLevel);
+    IndexingTestUtil.waitUntilIndexesAreReady(myFixture.getProject());
   }
 
   protected void runWithLanguageLevel(@NotNull LanguageLevel languageLevel, @NotNull Runnable runnable) {
@@ -330,7 +325,6 @@ public abstract class PyTestCase extends UsefulTestCase {
   }
 
   /**
-   * @param name
    * @return class by its name from file
    */
   @NotNull
@@ -491,7 +485,7 @@ public abstract class PyTestCase extends UsefulTestCase {
    * Example: "user.n[caret]." There are "name" and "nose" fields.
    * By calling this function with "nose" you will end with "user.nose  ".
    */
-  protected final void completeCaretWithMultipleVariants(final String ... desiredVariants) {
+  protected final void completeCaretWithMultipleVariants(final String @NotNull ... desiredVariants) {
     final LookupElement[] lookupElements = myFixture.completeBasic();
     final LookupEx lookup = myFixture.getLookup();
     if (lookupElements != null && lookupElements.length > 1) {
@@ -536,7 +530,7 @@ public abstract class PyTestCase extends UsefulTestCase {
     Disposer.register(myFixture.getProjectDisposable(), () -> PsiTestUtil.removeExcludedRoot(module, dir));
   }
 
-  public <T> void assertContainsInRelativeOrder(@NotNull final Iterable<? extends T> actual, final T ... expected) {
+  public <T> void assertContainsInRelativeOrder(@NotNull final Iterable<? extends T> actual, final T @Nullable ... expected) {
     final List<T> actualList = Lists.newArrayList(actual);
     if (expected.length > 0) {
       T prev = expected[0];

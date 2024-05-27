@@ -287,11 +287,11 @@ internal fun PyReferenceExpression.getGenericTypeFromTarget(
         val scopeOwner = ScopeUtil.getScopeOwner(anchor)
         val name = target.name
         if (scopeOwner != null && name != null &&
-            !ScopeUtil.getElementsOfAccessType(
+            ScopeUtil.getElementsOfAccessType(
                 name,
                 scopeOwner,
                 ReadWriteInstruction.ACCESS.ASSERTTYPE
-            ).isEmpty()
+            ).isNotEmpty()
         ) {
             val type = getTypeByControlFlow(name, context, anchor, scopeOwner)
             if (type != null) {
@@ -321,15 +321,14 @@ internal fun PyReferenceExpression.getGenericTypeFromTarget(
         return context.getType(target)
     }
     if (target is PsiDirectory) {
-        val dir = target
-        val file = dir.findFile(PyNames.INIT_DOT_PY)
+        val file = target.findFile(PyNames.INIT_DOT_PY)
         if (file != null) {
             return getTypeFromTarget(file, context, anchor)
         }
-        if (PyUtil.isPackage(dir, anchor)) {
+        if (PyUtil.isPackage(target, anchor)) {
             val containingFile = anchor.containingFile
             if (containingFile is PyFile) {
-                val qualifiedName = QualifiedNameFinder.findShortestImportableQName(dir)
+                val qualifiedName = QualifiedNameFinder.findShortestImportableQName(target)
                 if (qualifiedName != null) {
                     val module = PyImportedModule(
                         null,

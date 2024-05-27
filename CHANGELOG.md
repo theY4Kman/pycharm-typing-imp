@@ -3,10 +3,12 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+### Changed
+ - Added support for 2024.2
+ - Minimum supported PyCharm version is now 2024.1
 
 
 ## 1.1.2 — 2023/09/19
-### Changed
 ### Fixed
  - Ensure fixes are disabled for all major versions after latest "Included in build" version
 
