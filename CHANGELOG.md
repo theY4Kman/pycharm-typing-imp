@@ -3,6 +3,9 @@
 # pycharm-typing-imp Changelog
 
 ## [Unreleased]
+
+
+## 1.1.4 — 2024/11/30
 ### Changed
  - Added support for 2024.3
 
