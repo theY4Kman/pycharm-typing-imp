@@ -48,6 +48,8 @@ dependencies {
 
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
         bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
+
+        pluginVerifier()
     }
 }
 
@@ -60,6 +62,12 @@ intellijPlatform {
     pluginConfiguration {
         name = properties("pluginName")
         version = properties("platformVersion")
+    }
+
+    verifyPlugin {
+        ides {
+            recommended()
+        }
     }
 }
 
