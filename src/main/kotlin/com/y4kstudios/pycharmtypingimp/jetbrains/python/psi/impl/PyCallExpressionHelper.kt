@@ -409,15 +409,15 @@ object PyCallExpressionHelper {
             PyCallableType::class.java
         ) ?: return null
         if (clarifiedResolved is PyCallable) {
-            val originalModifier =
-                if (clarifiedResolved is PyFunction) clarifiedResolved.modifier else null
-            val resolvedModifier =
-                ObjectUtils.chooseNotNull(originalModifier, resolveResult.myWrappedModifier)
+            val originalModifier = (clarifiedResolved as? PyFunction)?.modifier
+            val resolvedModifier = ObjectUtils.chooseNotNull(originalModifier, resolveResult.myWrappedModifier)
+
             val isConstructorCall = resolveResult.myIsConstructor
             val qualifiers = resolveResult.myOriginalResolveResult.qualifiers
+
             val isByInstance = (isConstructorCall
-                    || isQualifiedByInstance(clarifiedResolved, qualifiers, context)
-                    || clarifiedResolved is PyBoundFunction)
+                    || isQualifiedByInstance(clarifiedResolved, qualifiers, context))
+
             val lastQualifier = ContainerUtil.getLastItem(qualifiers)
             val isByClass =
                 lastQualifier != null && isQualifiedByClass(

@@ -11,7 +11,6 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.0"
     // Gradle IntelliJ Plugin
     id("org.jetbrains.intellij.platform") version "2.0.0-beta3"
-//    id("org.jetbrains.intellij") version "1.15.0"
     // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "1.3.1"
     // Gradle Qodana Plugin
@@ -37,6 +36,7 @@ repositories {
 
 dependencies {
     testCompileOnly("junit", "junit", "4.13.1")
+    testImplementation("org.opentest4j", "opentest4j", "1.3.0")
 
     intellijPlatform {
         val type = providers.gradleProperty("platformType")

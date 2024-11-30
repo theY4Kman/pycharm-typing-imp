@@ -12,11 +12,11 @@ import com.y4kstudios.pycharmtypingimp.openapi.extensions.notApplicableOnlyIfBui
 /**
  * Provides typing info for descriptor-based class attributes served by __get__
  *
- * PY-55531 (unfixed as of 2024/05/27): https://youtrack.jetbrains.com/issue/PY-55531/Pycharm-cant-handle-typing-of-get-method-of-descriptors
+ * PY-55531 (unfixed as of 2024/11/30): https://youtrack.jetbrains.com/issue/PY-55531/Pycharm-cant-handle-typing-of-get-method-of-descriptors
  *
  * See also https://youtrack.jetbrains.com/issue/PY-26184/Type-hinting-information-for-bound-generics-lost-in-descriptors
- *    Note that (as of 2024/05/27) this issue has "Included in builds" listed, but this class's issue still
- *    persists in these versions
+ *    Note that (as of 2024/05/27, re-checked on 2024/11/30) this issue has "Included in builds" listed, but this
+ *    class's issue still persists in these versions.
  */
 class DescriptorTypeProvider : PyTypeProviderBase() {
     init {
@@ -26,6 +26,7 @@ class DescriptorTypeProvider : PyTypeProviderBase() {
                 //  ref: https://youtrack.jetbrains.com/issue/PY-26184/Type-hinting-information-for-bound-generics-lost-in-descriptors
                 // 241 -> buildNumber >= 17318  // tested not working
                 // 242 -> buildNumber >= 7578   // tested not working
+                // 243 -> buildNumber >= 15521  // tested not working
                 else -> false
             }
         }

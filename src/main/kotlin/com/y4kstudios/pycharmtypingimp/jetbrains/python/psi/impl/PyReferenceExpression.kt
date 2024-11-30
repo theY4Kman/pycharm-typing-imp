@@ -76,7 +76,7 @@ internal fun PyReferenceExpression.getDescriptorType(
     if (targetType == null || targetType.isDefinition) return null
     val resolveContext = PyResolveContext.noProperties(context)
     val members = targetType.resolveMember(
-        PyNames.GET, this, AccessDirection.READ,
+        PyNames.DUNDER_GET, this, AccessDirection.READ,
         resolveContext
     )
     if (members == null || members.isEmpty()) return null
@@ -159,7 +159,7 @@ internal fun getTypeByControlFlow(
     )
     val element = augAssignment ?: anchor
     try {
-        val defs = PyDefUseUtil.getLatestDefs(scopeOwner, name, element, true, false)
+        val defs = PyDefUseUtil.getLatestDefs(scopeOwner, name, element, true, false, context)
         // null means empty set of possible types, Ref(null) means Any
         val combinedType = StreamEx.of(defs)
             .select(ReadWriteInstruction::class.java)
